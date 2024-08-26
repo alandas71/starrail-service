@@ -38,20 +38,22 @@ class CharacterController {
   }
   
   async getAllCharacteres(req: Request, res: Response): Promise<void> {
-    const { page, limit, offset, query } = req.query;
-    const atualPage = parseInt(page as string, 10) || 1;
+    const { page, limit, query } = req.query;
+    const currentPage = parseInt(page as string, 10) || 1;
     const itemsPerPage = parseInt(limit as string, 10) || 20;
-    const startIndex = (atualPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+
     try {
       let characters = await this.starRailService.getAllCharacteres();
+  
       if (query) {
         const searchTerm = (query as string).toLowerCase();
         characters = characters.filter(c => 
           c.name.get("en").toLowerCase().includes(searchTerm)
         );
       }
-      const paginatedCharacters = characters.slice(startIndex, endIndex);
+
+      const paginatedCharacters = characters.slice(startIndex, startIndex + itemsPerPage);
       const safeCharacters = paginatedCharacters.map((c: any) => {
         return _.cloneDeep({
           id: c.id,
