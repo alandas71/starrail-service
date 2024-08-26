@@ -5,7 +5,7 @@ class StarRailService {
 
   constructor() {
     this.starRailService = new StarRail({ cacheDirectory: "./cache" });
-    // this.starRailService.cachedAssetsManager.cacheDirectorySetup();
+    this.starRailService.cachedAssetsManager.cacheDirectorySetup();
   }
 
   async getAllCharacteres() {

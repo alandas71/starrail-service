@@ -1,5 +1,6 @@
 import StarRailService from "../Services/StarRailService";
 import { Request, Response } from "express";
+import _ from 'lodash';
 
 class CharacterController {
   private starRailService: StarRailService;
@@ -8,10 +9,64 @@ class CharacterController {
     this.starRailService = new StarRailService();
   }
 
-  async getAllCharacteres(req: Request, res: Response): Promise<void> {
+  async searchCharactersByName(req: Request, res: Response): Promise<void> {
+    const { page, limit, query } = req.query;
+    const atualPage = parseInt(page as string, 10) || 1;
+    const itemsPerPage = parseInt(limit as string, 10) || 20;
+    const startIndex = (atualPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+  
     try {
-      const Characters = await this.starRailService.getAllCharacteres();
-      res.status(200).json(Characters);
+      let characters = await this.starRailService.getAllCharacteres();
+  
+      if (query) {
+        const searchTerm = (query as string).toLowerCase();
+        characters = characters.filter(c => 
+          c.name.get("en").toLowerCase().includes(searchTerm)
+        );
+      }
+  
+      const paginatedCharacters = characters.slice(startIndex, endIndex);
+  
+      res.status(200).json(paginatedCharacters.map(c => ({
+        id: c.id,
+        name: c.name.get("en")
+      })));
+    } catch (error) {
+      res.status(500).json({ message: "Erro interno no servidor." });
+    }
+  }
+  
+  async getAllCharacteres(req: Request, res: Response): Promise<void> {
+    const { page, limit, offset, query } = req.query;
+    const atualPage = parseInt(page as string, 10) || 1;
+    const itemsPerPage = parseInt(limit as string, 10) || 20;
+    const startIndex = (atualPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    try {
+      let characters = await this.starRailService.getAllCharacteres();
+      if (query) {
+        const searchTerm = (query as string).toLowerCase();
+        characters = characters.filter(c => 
+          c.name.get("en").toLowerCase().includes(searchTerm)
+        );
+      }
+      const paginatedCharacters = characters.slice(startIndex, endIndex);
+      const safeCharacters = paginatedCharacters.map((c: any) => {
+        return _.cloneDeep({
+          id: c.id,
+          charIcon: c.icon.url,
+          stars: c.stars,
+          pathName: c.path.id,
+          pathIcon: c.path.icon.url,
+          combatType: c.combatType.id,
+          maxEnergy: c.maxEnergy,
+          combatTypeIcon: c.combatType.icon.url,
+          nameEnglish: c.name.get("en")
+        });
+      });
+  
+      res.status(200).json(safeCharacters);
     } catch (error) {
       res.status(500).json({ message: "Erro interno no servidor." });
     }
