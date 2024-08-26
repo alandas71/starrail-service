@@ -11,10 +11,9 @@ class CharacterController {
 
   async searchCharactersByName(req: Request, res: Response): Promise<void> {
     const { page, limit, query } = req.query;
-    const atualPage = parseInt(page as string, 10) || 1;
+    const currentPage = parseInt(page as string, 10) || 1;
     const itemsPerPage = parseInt(limit as string, 10) || 20;
-    const startIndex = (atualPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
+    const startIndex = (currentPage - 1) * itemsPerPage;
   
     try {
       let characters = await this.starRailService.getAllCharacteres();
@@ -26,7 +25,7 @@ class CharacterController {
         );
       }
   
-      const paginatedCharacters = characters.slice(startIndex, endIndex);
+      const paginatedCharacters = characters.slice(startIndex, startIndex + itemsPerPage);
   
       res.status(200).json(paginatedCharacters.map(c => ({
         id: c.id,
