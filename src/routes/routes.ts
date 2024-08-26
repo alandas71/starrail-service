@@ -7,5 +7,6 @@ const router = Router();
 
 router.get("/v1/characters/search", characterController.searchCharactersByName.bind(characterController));
 router.get("/v1/characters", characterController.getAllCharacteres.bind(characterController));
+router.get("/v1/character/:id", characterController.getCharacterById.bind(characterController));
 
 export default router;

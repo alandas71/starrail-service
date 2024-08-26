@@ -71,6 +71,36 @@ class CharacterController {
       res.status(500).json({ message: "Erro interno no servidor." });
     }
   }
+
+  async getCharacterById(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+
+    try {
+      const characters = await this.starRailService.getAllCharacteres();
+      const character = characters.find(c => c.id === Number(id));
+
+      if (!character) {
+        res.status(404).json({ message: "Personagem não encontrado." });
+        return;
+      }
+
+      const safeCharacter = _.cloneDeep({
+        id: character.id,
+        icon: character.icon.url,
+        stars: character.stars,
+        pathName: character.path.id,
+        pathIcon: character.path.icon.url,
+        combatType: character.combatType.id,
+        maxEnergy: character.maxEnergy,
+        combatTypeIcon: character.combatType.icon.url,
+        name: character.name.get("en"),
+      });
+
+      res.status(200).json(safeCharacter);
+    } catch (error) {
+      res.status(500).json({ message: "Erro interno no servidor." });
+    }
+  }
 }
 
 export default CharacterController;
